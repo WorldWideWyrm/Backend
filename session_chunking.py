@@ -43,14 +43,9 @@ def chunk_session_text(text, chunk_size=120, overlap=20):
 
     return chunks
 
-
-if __name__ == "__main__":
-    
-
-    # Go one folder up
+def get_files():
     parent_dir = os.path.dirname(os.getcwd())
 
-    # Build path to frontend/sessions
     target_path = os.path.join(parent_dir, "front_end", "previous_sessions")
 
     file_texts = []
@@ -61,6 +56,13 @@ if __name__ == "__main__":
         if os.path.isfile(file_path):  # skip directories
             with open(file_path, "r", encoding="utf-8") as f:
                 file_texts.append(f.read())
+    return file_texts
+
+if __name__ == "__main__":
+    
+
+
+    file_texts = get_files()
 
     print(file_texts)
 
