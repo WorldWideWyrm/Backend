@@ -1,5 +1,6 @@
 import chromadb
 from sentence_transformers import SentenceTransformer
+import os
 
 client = chromadb.PersistentClient(path="./chroma_db")
 
@@ -44,19 +45,26 @@ def chunk_session_text(text, chunk_size=120, overlap=20):
 
 
 if __name__ == "__main__":
-    test_text = """
-    The party entered the old ruins. The wizard found a red gem near the altar.
-    The rogue checked for traps. Later the group fought two goblins outside
-    the temple and questioned a guard about the missing caravan.
-    """
-    test_text2 = """
-    The party entered the old ruins again. The wizard placed the red gem on the altar.
-    A Dragons got summoned and the party was wiped out.
-    """
+    
 
-    array = [test_text, test_text2]
+    # Go one folder up
+    parent_dir = os.path.dirname(os.getcwd())
 
-    for z, text in enumerate(array, start=1):
+    # Build path to frontend/sessions
+    target_path = os.path.join(parent_dir, "front_end", "previous_sessions")
+
+    file_texts = []
+    
+    for filename in os.listdir(target_path):
+        file_path = os.path.join(target_path, filename)
+        
+        if os.path.isfile(file_path):  # skip directories
+            with open(file_path, "r", encoding="utf-8") as f:
+                file_texts.append(f.read())
+
+    print(file_texts)
+
+    for z, text in enumerate(file_texts, start=1):
 
 
         chunks = chunk_session_text(text, chunk_size=20, overlap=5)
