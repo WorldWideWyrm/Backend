@@ -50,13 +50,16 @@ def get_files():
 
     file_texts = []
     
-    for filename in os.listdir(target_path):
+    for filename in sorted(os.listdir(target_path), key=session_key):
         file_path = os.path.join(target_path, filename)
-        
-        if os.path.isfile(file_path):  # skip directories
+
+        if os.path.isfile(file_path):  
             with open(file_path, "r", encoding="utf-8") as f:
                 file_texts.append(f.read())
     return file_texts
+
+def session_key(filename):
+    return int(filename.split('_')[1].split('.')[0])
 
 
 def session_chunking():
