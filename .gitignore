@@ -1,2 +1,19 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Chroma / database
+chroma_db/
+*.sqlite3
+*.bin
+
+# Data / temp
 *.pkl
 pdfs/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
