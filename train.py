@@ -31,9 +31,9 @@ def matricies_init_ ():
     feedforward_matrices_output = [{"W1": np.array([[random.uniform(-limit, limit) for _ in range(d_ff)]for _ in range(d_model)]),
                              "W2": np.array([[random.uniform(-limit, limit) for _ in range(d_model)]for _ in range(d_ff)])}for _ in range(n)]
     last_linear_matrices = np.random.uniform(-limit, limit, ( d_model, d_size))
-    return dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked
+    return dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked, last_linear_matrices
 
-def save(dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked, filepath):
+def save(dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked, last_linear_matrices,  filepath):
         model_data = {
             'dictonary_vectors': dictonary_vectors,
             'multihead_matrices_input': multihead_matrices_input,
@@ -43,12 +43,13 @@ def save(dictonary_vectors, multihead_matrices_input, multihead_matrices_output,
             'feedforward_matrices_output': feedforward_matrices_output,
             'W_O_input': W_O_input,
             'W_O_output': W_O_output,
-            'W_O_masked': W_O_masked
+            'W_O_masked': W_O_masked,
+            "last_linear_matrices": last_linear_matrices
         }
         with open(filepath, 'wb') as file:
             pickle.dump(model_data, file)
 
-dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked = matricies_init_ ()
+dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked, last_linear_matrices  = matricies_init_ ()
 
 
-save(dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked, os.path.join(os.getcwd(), "model.pkl"))
+save(dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked, last_linear_matrices , os.path.join(os.getcwd(), "model.pkl"))

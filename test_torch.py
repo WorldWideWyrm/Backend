@@ -1,8 +1,6 @@
 from transformers import GPT2TokenizerFast
 import Stemmer
-import numpy as np
 import os
-import pickle
 import math
 import torch
 
@@ -13,18 +11,14 @@ h=8
 
 
 
-def softmax(x, axis=-1):
-    x = x - np.max(x, axis=axis, keepdims=True)
-    e_x = np.exp(x)
-    return e_x / e_x.sum(axis=axis, keepdims=True)
-
+def softmax(x, dim=-1):
+    return torch.softmax(x, dim=dim)
 def load_model():
-    with open(os.path.join(os.getcwd(), "model.pkl"), 'rb') as file:
-        model_data = pickle.load(file)
+    model_data = torch.load(os.path.join(os.getcwd(), "torch_model.pkl"))
     return model_data
 
 def token_vectors(model, tokens):
-    return np.array([model['dictonary_vectors'][t] for t in tokens])
+    return model['dictonary_vectors'][tokens]
 
 def PE(pos, i, d_model):
     if i % 2 == 0:
@@ -35,7 +29,7 @@ def PE(pos, i, d_model):
 
 def positional_encoding(tokens, start_pos, d_model):
     seq_len = tokens.shape[0]
-    pe = np.zeros((seq_len, d_model))
+    pe = torch.zeros((seq_len, d_model), dtype=torch.float32)
 
     for pos in range(seq_len):
         actual_pos = start_pos + pos
@@ -48,7 +42,7 @@ def input_encoding(model, tokens, d_model, n, h):
     tokens_vektors = tokens
     for i in range(n):
         temp_matrice = multiheaded_attention(model['multihead_matrices_input'][i],tokens_vektors, tokens_vektors, d_model, h)
-        temp_matrice = temp_matrice @ model['W_O_input'][i]
+        temp_matrice = torch.matmul(temp_matrice, model['W_O_input'][i])
         tokens_vektors = add_norm(tokens_vektors, temp_matrice)
         temp_matrice = feedfarward(model['feedforward_matrices_input'][i],tokens_vektors)
         tokens_vektors = add_norm(tokens_vektors, temp_matrice)
@@ -59,10 +53,10 @@ def add_norm(tokens_vektors, temp_matric,  eps=1e-6):
     added = tokens_vektors + temp_matric
 
     # Layer normalization
-    mean = np.mean(added, axis=1, keepdims=True)
-    var = np.mean((added - mean) ** 2, axis=1, keepdims=True)
+    mean = torch.mean(added, axis=1, keepdims=True)
+    var = torch.mean((added - mean) ** 2, axis=1, keepdims=True)
 
-    return (added - mean) / np.sqrt(var + eps)
+    return (added - mean) / torch.sqrt(var + eps)
 
 
 
@@ -70,11 +64,11 @@ def multiheaded_attention(attention_model, q_input, kv_input, d_model, h, masked
     d_k = d_model // h
 
     # separate projections
-    Wq, Wk, Wv = np.split(attention_model, 3, axis=1)
+    Wq, Wk, Wv = torch.chunk(attention_model, 3, axis=1)
 
-    q = q_input @ Wq
-    k = kv_input @ Wk
-    v = kv_input @ Wv
+    q = torch.matmul(q_input, Wq)
+    k = torch.matmul(kv_input, Wk)
+    v = torch.matmul(kv_input, Wv)
 
     def split_heads(x):
         return x.reshape(x.shape[0], h, d_k)
@@ -90,29 +84,28 @@ def multiheaded_attention(attention_model, q_input, kv_input, d_model, h, masked
         ki = k[:, i, :]
         vi = v[:, i, :]
 
-        scores = (qi @ ki.T) / math.sqrt(d_k)
+        scores = torch.matmul(qi, ki.T) / torch.sqrt(d_k)
 
         if masked:
-            mask = np.triu(np.ones(scores.shape), k=1) * -1e9
-            scores += mask
+            mask = torch.triu(torch.ones_like(scores),diagonal=1) * -1e9
+            scores = scores + mask
 
         weights = softmax(scores)
-        outputs.append(weights @ vi)
+        outputs.append(torch.matmul(weights, vi))
 
-    return np.concatenate(outputs, axis=1)
+    return torch.cat(outputs, dim=1)
 
 def feedfarward(feedfarward_model, tokens_vektors):
     W1 = feedfarward_model["W1"]
     W2 = feedfarward_model["W2"]
 
     # First linear
-    hidden = tokens_vektors @ W1
+    hidden = torch.matmul(tokens_vektors, W1)
 
-    # Activation (ReLU)
-    hidden = np.maximum(0, hidden)
+    hidden = torch.relu(hidden)
 
     # Second linear
-    output = hidden @ W2
+    output = torch.matmul(hidden, W2)
 
     return output
 
@@ -122,16 +115,16 @@ def output_decifiring(output_tokens, model, input_matrice, d_model, n, h, next_s
 
     for i in range(n):
         temp_matrice = multiheaded_attention(model['multihead_matrices_masked'][i],tokens, tokens, d_model, h, True)
-        temp_matrice = temp_matrice @ model['W_O_masked'][i]
+        temp_matrice = torch.matmul(temp_matrice, model['W_O_masked'][i])
         tokens = add_norm(tokens, temp_matrice)
         temp_matrice = multiheaded_attention(model['multihead_matrices_output'][i],tokens, input_matrice, d_model, h)
-        temp_matrice = temp_matrice @ model['W_O_output'][i]
+        temp_matrice = torch.matmul(temp_matrice, model['W_O_output'][i])
         tokens = add_norm(tokens, temp_matrice)
         temp_matrice = feedfarward(model['feedforward_matrices_output'][i],tokens)
         tokens = add_norm(tokens, temp_matrice)
-    logits = tokens @ model["last_linear_matrices"]
+    logits = torch.matmul(tokens, model["last_linear_matrices"])
     probs = softmax(logits)
-    next_token = np.argmax(probs[-1])  
+    next_token = torch.argmax(probs[-1]).item()
     return next_token
 
     
