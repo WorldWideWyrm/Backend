@@ -3,6 +3,7 @@ import Stemmer
 import os
 import math
 import torch
+import torch.nn as nn
 
 d_size=50257
 d_model = 512
