@@ -27,13 +27,13 @@ SKIP_HEADINGS = {
 
 def load_pages(path: Path) -> list[dict]:
     if not path.exists():
-        raise FileNotFoundError(f"Filen blev ikke fundet: {path}")
+        raise FileNotFoundError(f"File not found: {path}")
 
     with path.open("r", encoding="utf-8") as f:
         data = json.load(f)
 
     if not isinstance(data, list):
-        raise ValueError("JSON-filen skal indeholde en liste")
+        raise ValueError("JSON-file needs to contain a list")
 
     return data
 
@@ -146,12 +146,12 @@ def main() -> None:
     chunks = chunk_rules_from_pages(pages)
     save_chunks(OUTPUT_PATH, chunks)
 
-    print(f"Antal rule chunks: {len(chunks)}")
+    print(f"Number of rule chunks: {len(chunks)}")
 
     for i, chunk in enumerate(chunks[:5], 1):
         print(f"\n--- CHUNK {i} ---")
         print(chunk["metadata"]["title"])
-        print(f"Sider: {chunk['metadata']['start_page']}–{chunk['metadata']['end_page']}")
+        print(f"Pages: {chunk['metadata']['start_page']}–{chunk['metadata']['end_page']}")
         print(chunk["text"][:500])
 
 
