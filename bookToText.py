@@ -44,28 +44,6 @@ def pdfToText():
     with out_path.open("w", encoding="utf-8") as f:
         json.dump(cleaned_pages, f, ensure_ascii=False, indent=2)
 
-class Spells:
-    def __init__(self, chunk_id, title, level, school, classes, casting_time, range, components, duration, text, chapter, page, upcasting=0, ritual=0, concentration=0):
-        self.chunk_id = chunk_id
-        self.title = title
-        self.level = level
-        self.school = school
-        self.classes = classes
-        self.casting_time = casting_time
-        self.range = range
-        self.components = components
-        self.duration = duration
-        self.text = text
-        self.chapter = chapter
-        self.page = page
 
-class Feats:
-    pass
-
-class Glossary:
-    pass
-
-class Rules:
-    pass
-
-
+if __name__ == "pdfToText":
+    pdfToText() 
