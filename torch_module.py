@@ -10,14 +10,17 @@ class MyTransformer(nn.Module):
         self.d_model = 512
         self.n=6
         self.h=8
-        self.load_model(os.path.join(os.getcwd(), "torch_model.pkl"))
 
 
     def softmax(self, x, dim=-1):
         return torch.softmax(x, dim=dim)
     
     def load_model(self, path):
-        model_data = torch.load(path)
+        
+        if isinstance(path, str):
+            model_data = torch.load(path)
+        else:
+            model_data = path 
 
         # Embedding
         self.dictionary_vectors = nn.Parameter(model_data['dictonary_vectors'])
