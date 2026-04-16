@@ -2,7 +2,7 @@ import chromadb
 from chromadb.utils import embedding_functions
 
 CHROMA_PATH = "chroma_db"
-COLLECTION_NAME = "rules"
+COLLECTION_NAME = "handbook"
 
 
 def main() -> None:
