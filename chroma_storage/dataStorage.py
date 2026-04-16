@@ -1,5 +1,4 @@
 import json
-import json
 from pathlib import Path
 
 import chromadb
@@ -39,18 +38,19 @@ def clean_metadata(metadata: dict) -> dict:
 def normalize_rule_chunks(chunks: list[dict]) -> list[dict]:
     normalized = []
 
-    for chunk in chunks:
-        chunk_id = chunk.get("id")
+    for i, chunk in enumerate(chunks):
+        chunk_id = chunk.get("id") or f"rule_{i:04d}"
         text = chunk.get("text", "").strip()
         metadata = chunk.get("metadata", {})
 
-        if not chunk_id or not text:
+        if not text:
             continue
 
         if not isinstance(metadata, dict):
             metadata = {}
 
-        metadata["type"] = "rule"
+        metadata.setdefault("type", "rule")
+        metadata.setdefault("source", "PHB 2024 Rules")
 
         normalized.append({
             "id": chunk_id,
@@ -71,7 +71,6 @@ def normalize_spell_chunks(chunks: list[dict]) -> list[dict]:
         if not text:
             continue
 
-        
         if "metadata" in chunk and isinstance(chunk["metadata"], dict):
             metadata = dict(chunk["metadata"])
         else:
@@ -114,7 +113,7 @@ def main() -> None:
     collection = client.get_or_create_collection(
         name=COLLECTION_NAME,
         embedding_function=embedding_fn,
-        metadata={"description": "PHB 2024 handbook: rules + spells"},
+        metadata={"description": "PHB 2024 handbook: rules + spell rules + spells"},
     )
 
     ids = [chunk["id"] for chunk in all_chunks]
@@ -129,7 +128,7 @@ def main() -> None:
             metadatas=metadatas[i:i + batch_size],
         )
 
-    print(f"Indsat {len(rule_chunks)} rules")
+    print(f"Indsat {len(rule_chunks)} rule/spell-rule chunks")
     print(f"Indsat {len(spell_chunks)} spells")
     print(f"Indsat {len(all_chunks)} chunks i collection '{COLLECTION_NAME}'")
 

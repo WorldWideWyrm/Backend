@@ -7,6 +7,9 @@ OUTPUT_PATH = Path("pdfs/rules_chunks.json")
 
 APPENDIX_START_PAGE = 359
 
+SPELL_START_PAGE = 234
+SPELL_END_PAGE = 238
+
 NON_RULE_HEADINGS = {
     "OBJECT ARMOR CLASS",
     "OBJECT HIT POINTS",
@@ -22,6 +25,19 @@ NON_RULE_HEADINGS = {
 SKIP_HEADINGS = {
     "GLOSSARY CONVENTIONS",
     "RULES DEFINITIONS",
+}
+
+SPELL_RULE_HEADINGS = {
+    "CASTING TIME",
+    "RANGE",
+    "COMPONENTS",
+    "DURATION",
+    "CONCENTRATION",
+    "RITUAL",
+    "VERBAL COMPONENT",
+    "SOMATIC COMPONENT",
+    "MATERIAL COMPONENT",
+    "LONGER CASTING TIMES",
 }
 
 
@@ -71,7 +87,13 @@ def finalize_chunks(chunks: list[dict]) -> list[dict]:
     for chunk in chunks:
         title = chunk["metadata"]["title"]
         body = chunk["text"]
-        chunk["text"] = f"{title}\n\n{body}"
+        chunk_type = chunk["metadata"].get("type", "rule")
+
+        if chunk_type == "spell_rule":
+            chunk["text"] = f"Spellcasting Rule (Chapter 7): {title}\n\n{body}"
+        else:
+            chunk["text"] = f"{title}\n\n{body}"
+
     return chunks
 
 
@@ -135,6 +157,56 @@ def chunk_rules_from_pages(pages: list[dict]) -> list[dict]:
     return finalize_chunks(chunks)
 
 
+def chunk_spell_rules_from_pages(pages: list[dict]) -> list[dict]:
+    pages = [
+        p for p in pages
+        if SPELL_START_PAGE <= p.get("page_number", 0) <= SPELL_END_PAGE
+    ]
+
+    chunks = []
+    current = None
+
+    for page in pages:
+        page_number = page["page_number"]
+        raw_text = page["text"]
+
+        lines = [normalize_line(line) for line in raw_text.split("\n")]
+        lines = [line for line in lines if line]
+
+        for line in lines:
+            upper_line = line.upper()
+
+            if upper_line in SPELL_RULE_HEADINGS:
+                if current is not None:
+                    current["text"] = current["text"].strip()
+                    chunks.append(current)
+
+                current = {
+                    "id": f"spell_rule_{len(chunks):04d}",
+                    "text": "",
+                    "metadata": {
+                        "type": "spell_rule",
+                        "title": upper_line,
+                        "start_page": page_number,
+                        "end_page": page_number,
+                        "source": "PHB 2024 Chapter 7 Spell Rules",
+                    }
+                }
+            else:
+                if current is not None:
+                    if current["text"]:
+                        current["text"] += " " + line
+                    else:
+                        current["text"] = line
+                    current["metadata"]["end_page"] = page_number
+
+    if current is not None:
+        current["text"] = current["text"].strip()
+        chunks.append(current)
+
+    return finalize_chunks(chunks)
+
+
 def save_chunks(path: Path, chunks: list[dict]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
@@ -143,14 +215,21 @@ def save_chunks(path: Path, chunks: list[dict]) -> None:
 
 def main() -> None:
     pages = load_pages(INPUT_PATH)
-    chunks = chunk_rules_from_pages(pages)
+
+    spell_rule_chunks = chunk_spell_rules_from_pages(pages)
+    glossary_chunks = chunk_rules_from_pages(pages)
+
+    chunks = spell_rule_chunks + glossary_chunks
     save_chunks(OUTPUT_PATH, chunks)
 
-    print(f"Number of rule chunks: {len(chunks)}")
+    print(f"Number of spell rule chunks: {len(spell_rule_chunks)}")
+    print(f"Number of glossary chunks: {len(glossary_chunks)}")
+    print(f"Total chunks: {len(chunks)}")
 
-    for i, chunk in enumerate(chunks[:5], 1):
+    for i, chunk in enumerate(chunks[:8], 1):
         print(f"\n--- CHUNK {i} ---")
         print(chunk["metadata"]["title"])
+        print(f"Type: {chunk['metadata']['type']}")
         print(f"Pages: {chunk['metadata']['start_page']}–{chunk['metadata']['end_page']}")
         print(chunk["text"][:500])
 
