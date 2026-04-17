@@ -10,6 +10,18 @@ chroma_db/
 *.bin
 
 # Data / temp
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Chroma / database
+chroma_db/
+*.sqlite3
+*.bin
+
+# Data / temp
 *.pkl
 pdfs/
 
@@ -21,3 +33,8 @@ pdfs/
 =======
 .idea/
 >>>>>>> 25a0b8ad (Ignore venv and chroma_db)
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
