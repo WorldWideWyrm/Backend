@@ -5,7 +5,7 @@ from pathlib import Path
 INPUT_PATH = Path("pdfs/cleaned_pages.json")
 OUTPUT_PATH = Path("pdfs/rule_glossary.txt")
 
-APPENDIX_START_PAGE = 360
+APPENDIX_START_PAGE = 361
 START_IDX = APPENDIX_START_PAGE - 1
 
 SPELL_START_PAGE = 234

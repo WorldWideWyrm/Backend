@@ -5,9 +5,9 @@ from pathlib import Path
 INPUT_PATH = Path("pdfs/cleaned_pages.json")
 OUTPUT_PATH = Path("pdfs/rules_chunks.json")
 
-APPENDIX_START_PAGE = 359
+APPENDIX_START_PAGE = 360
 
-SPELL_START_PAGE = 234
+SPELL_START_PAGE = 235
 SPELL_END_PAGE = 238
 
 NON_RULE_HEADINGS = {

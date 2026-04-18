@@ -1,14 +1,13 @@
 import json
 from pathlib import Path
 
+SPELL_SECTION_START = 239
 SPELL_SECTION_END = 343
 
 def is_spell_start(lines, i):
     return (
         i + 2 < len(lines)
         and "Casting Time" in lines[i + 2]
-        and "Range" in lines[i + 3]
-        and "Components" in lines[i + 4]
         and not lines[i].lower().startswith("chapter")
         and not lines[i].lower().startswith("appendix")
     )
@@ -28,7 +27,7 @@ def main():
         lines = [line.strip() for line in page["text"].split("\n") if line.strip()]
 
         i = 0
-        while i < len(lines) and page["page_number"] <= SPELL_SECTION_END:
+        while i < len(lines) and page["page_number"] >= SPELL_SECTION_START and page["page_number"] <= SPELL_SECTION_END:
             
             if is_spell_start(lines, i):
                 if current_spell is not None:
