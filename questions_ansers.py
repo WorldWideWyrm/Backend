@@ -1124,3 +1124,55 @@ qs = {"What does \"advantage\" mean in 5.5e?",
         "can you create a new spell for me",
         "how to homebrew spells balanced"
     }
+
+import chromadb
+from chromadb.utils import embedding_functions
+
+CHROMA_PATH = "chroma_db"
+COLLECTION_NAME = "handbook"
+
+def main() -> None:
+    client = chromadb.PersistentClient(path=CHROMA_PATH)
+
+    embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+        model_name="all-MiniLM-L6-v2"
+    )
+
+    collection = client.get_collection(
+        name=COLLECTION_NAME,
+        embedding_function=embedding_fn
+    )
+    with open("output.txt", "w", encoding="utf-8") as f:
+        for i in qs:
+            query = i
+
+            result = collection.query(
+                query_texts=[query],
+                n_results=5
+            )
+
+            documents = result.get("documents", [[]])[0]
+            metadatas = result.get("metadatas", [[]])[0]
+            distances = result.get("distances", [[]])[0] if "distances" in result else []
+
+            f.write("\"User: " + query.replace('"','\\"'))
+            if not documents:
+                print("Rag: No results found.")
+                return
+
+            f.write("Rag: " + query)
+            for i, doc in enumerate(documents, 1):
+                meta = metadatas[i - 1] if i - 1 < len(metadatas) else {}
+                distance = distances[i - 1] if i - 1 < len(distances) else None
+
+                f.write(f"\n--- RESULTS {i} ---")
+                f.write(f"Titel: {meta.get('title', 'Unknown')}")
+                f.write(f"Pages: {meta.get('start_page', '?')}–{meta.get('end_page', '?')}")
+                if distance is not None:
+                    f.write(f"Distance: {distance}")
+                f.write(doc)
+            f.write('",')
+
+
+if __name__ == "__main__":
+    main()
