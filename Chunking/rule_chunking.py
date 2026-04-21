@@ -25,6 +25,7 @@ NON_RULE_HEADINGS = {
 SKIP_HEADINGS = {
     "GLOSSARY CONVENTIONS",
     "RULES DEFINITIONS",
+    "OBJECT ARMOR CLASS"
 }
 
 SPELL_RULE_HEADINGS = {
@@ -112,21 +113,23 @@ def chunk_rules_from_pages(pages: list[dict]) -> list[dict]:
         lines = [line for line in lines if line]
 
         for line in lines:
+            upper_line = line.upper()
+
             if not seen_rules_definitions:
-                if line == "RULES DEFINITIONS":
+                if upper_line == "RULES DEFINITIONS":
                     seen_rules_definitions = True
                 continue
 
-            if line.upper().startswith("INDEX"):
+            if upper_line.startswith("INDEX"):
                 if current is not None:
                     current["text"] = current["text"].strip()
                     chunks.append(current)
                 return finalize_chunks(chunks)
 
-            if line in SKIP_HEADINGS:
+            if upper_line in SKIP_HEADINGS:
                 continue
 
-            if is_heading(line) and line not in NON_RULE_HEADINGS:
+            if is_heading(line):
                 if current is not None:
                     current["text"] = current["text"].strip()
                     chunks.append(current)
@@ -136,7 +139,7 @@ def chunk_rules_from_pages(pages: list[dict]) -> list[dict]:
                     "text": "",
                     "metadata": {
                         "type": "rule",
-                        "title": line,
+                        "title": upper_line,
                         "start_page": page_number,
                         "end_page": page_number,
                         "source": "PHB 2024 Rule Glossary"
