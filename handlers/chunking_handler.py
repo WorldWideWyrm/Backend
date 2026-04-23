@@ -1,4 +1,4 @@
-from base_handler import Handler
+from handler_interface import Handler
 from Chunking import rule_chunking
 
 class RuleChunkingHandler(Handler):

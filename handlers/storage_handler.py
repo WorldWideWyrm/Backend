@@ -1,4 +1,4 @@
-from base_handler import Handler
+from handler_interface import Handler
 from chroma_storage import dataStorage
 
 class ChromaStorageHandler(Handler):

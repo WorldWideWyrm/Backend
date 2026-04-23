@@ -1,4 +1,4 @@
-from base_handler import Handler
+from handler_interface import Handler
 from Parsers import rule_parser, spell_parser
 
 class RuleParsingHandler(Handler):
