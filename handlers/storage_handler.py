@@ -6,7 +6,7 @@ class ChromaStorageHandler(Handler):
         super().__init__()
 
     def handle(self, data=None):
-        print("ChromaStorageHandler is up andrunning")
+        print("ChromaStorageHandler is up and running")
         dataStorage.main()
 
         result = "chroma_db"
