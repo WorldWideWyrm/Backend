@@ -1,0 +1,13 @@
+Step 50 | Loss: 11.4756
+Step 100 | Loss: 11.2731
+Step 150 | Loss: 11.8995
+Step 200 | Loss: 11.0684
+Checkpoint saved at step 229
+Step 250 | Loss: 11.6447
+Step 300 | Loss: 8.9865
+Step 350 | Loss: 11.5702
+Checkpoint saved at step 372
+Step 400 | Loss: 9.1226
+Step 450 | Loss: 8.3943
+Step 50 | Loss: 12.1793
+Step 50 | Loss: 10.6738

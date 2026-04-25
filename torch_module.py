@@ -2,14 +2,16 @@ from transformers import GPT2TokenizerFast
 import os
 import torch
 import torch.nn as nn
+import math 
 
 class MyTransformer(nn.Module):
-    def __init__(self):
+    def __init__(self,vocab_size):
         super().__init__()
-        self.d_size=50257
+        self.d_size=vocab_size
         self.d_model = 512
         self.n=6
         self.h=8
+        self.load_model(os.path.join(os.getcwd(), "torch_model.pkl"))
 
 
     def softmax(self, x, dim=-1):
@@ -60,7 +62,7 @@ class MyTransformer(nn.Module):
 
         # Feedforward (input)
         self.ff_input = nn.ModuleList([
-            nn.ModuleDict({
+            nn.ParameterDict({
                 "W1": nn.Parameter(layer["W1"]),
                 "W2": nn.Parameter(layer["W2"])
             })
@@ -69,7 +71,7 @@ class MyTransformer(nn.Module):
 
         # Feedforward (output)
         self.ff_output = nn.ModuleList([
-            nn.ModuleDict({
+            nn.ParameterDict({
                 "W1": nn.Parameter(layer["W1"]),
                 "W2": nn.Parameter(layer["W2"])
             })
@@ -82,11 +84,26 @@ class MyTransformer(nn.Module):
     def token_vectors(self, tokens):
         return self.dictionary_vectors[tokens]
 
-    def PE(pos, i, d_model):
+    def PE(self, pos, i, d_model):
         if i % 2 == 0:
-            return torch.sin(pos / (10000 ** (i / d_model)))
+            return math.sin(pos / (10000 ** (i / d_model)))
         else:
-            return torch.cos(pos / (10000 ** ((i - 1) / d_model)))
+            return math.cos(pos / (10000 ** ((i - 1) / d_model)))
+
+    def return_model(self):
+        model_data = {
+            'dictonary_vectors': self.dictonary_vectors,
+            'multihead_matrices_input': self.multihead_input,
+            'multihead_matrices_output': self.multihead_output,
+            'multihead_matrices_masked': self.multihead_masked,
+            'feedforward_matrices_input': self.ff_input,
+            'feedforward_matrices_output': self.ff_output,
+            'W_O_input': self.W_O_input,
+            'W_O_output': self.W_O_output,
+            'W_O_masked': self.W_O_masked,
+            "last_linear_matrices": self.last_linear
+        }
+        return model_data
 
 
     def positional_encoding(self, tokens, start_pos):
@@ -125,37 +142,35 @@ class MyTransformer(nn.Module):
     def multiheaded_attention(self, attention_model, q_input, kv_input, masked=False):
         d_k = self.d_model // self.h
 
-        # separate projections
-        Wq, Wk, Wv = torch.chunk(attention_model, 3, axis=1)
+        Wq, Wk, Wv = torch.chunk(attention_model, 3, dim=1)
 
         q = torch.matmul(q_input, Wq)
         k = torch.matmul(kv_input, Wk)
         v = torch.matmul(kv_input, Wv)
 
-        def split_heads(x):
-            return x.reshape(x.shape[0], self.h, d_k)
+        batch_size = q.shape[0]
+        q_len = q.shape[1]
+        kv_len = k.shape[1]
 
-        q = split_heads(q)
-        k = split_heads(k)
-        v = split_heads(v)
+        q = q.view(batch_size, q_len, self.h, d_k).transpose(1, 2)
+        k = k.view(batch_size, kv_len, self.h, d_k).transpose(1, 2)
+        v = v.view(batch_size, kv_len, self.h, d_k).transpose(1, 2)
 
-        outputs = []
+        scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(d_k)
 
-        for i in range(self.h):
-            qi = q[:, i, :]
-            ki = k[:, i, :]
-            vi = v[:, i, :]
+        if masked:
+            mask = torch.triu(
+                torch.ones(q_len, kv_len, device=scores.device),
+                diagonal=1
+            ).bool()
+            scores = scores.masked_fill(mask, -1e9)
 
-            scores = torch.matmul(qi, ki.T) / torch.sqrt(d_k)
+        weights = torch.softmax(scores, dim=-1)
+        out = torch.matmul(weights, v)
 
-            if masked:
-                mask = torch.triu(torch.ones_like(scores),diagonal=1) * -1e9
-                scores = scores + mask
-
-            weights = self.softmax(scores)
-            outputs.append(torch.matmul(weights, vi))
-
-        return torch.cat(outputs, dim=1)
+        return out.transpose(1, 2).contiguous().view(
+            batch_size, q_len, self.d_model
+        )
 
     def feedfarward(self, feedfarward_model, tokens_vektors):
         W1 = feedfarward_model["W1"]
@@ -171,9 +186,9 @@ class MyTransformer(nn.Module):
 
         return output
 
-    def output_decifiring(self, output_tokens, input_matrice, d_model, next_start_pos):
+    def output_decifiring(self, output_tokens, input_matrice,  next_start_pos=0):
 
-        tokens, _ = self.positional_encoding( output_tokens, next_start_pos, d_model)
+        tokens, _ = self.positional_encoding( output_tokens, next_start_pos)
 
         for i in range(self.n):
             temp_matrice = self.multiheaded_attention( self.multihead_masked[i],tokens, tokens, masked=True)
@@ -197,7 +212,7 @@ class MyTransformer(nn.Module):
 
         # --- Decoder ---
         dec = self.token_vectors(decoder_input_ids)
-        logits = self.decode(dec, enc)
+        logits = self.output_decifiring(dec, enc)
 
         if target_ids is not None:
             loss_fn = nn.CrossEntropyLoss()

@@ -4,17 +4,19 @@ import Stemmer
 import sys
 sys.path.append("Backend")
 import torch_module
+from torch.nn.utils.rnn import pad_sequence
 import math 
 import os
 import torch
 import time
 import random
+import json
 
-
-
+tokenizer = GPT2TokenizerFast.from_pretrained("Xenova/gpt-4", local_files_only=True)
+vocab_size = len(tokenizer)
 feedforward_matrices = []
 d_model = 512
-d_size = 50257
+d_size = vocab_size
 fan_in = d_model
 fan_out = d_model
 qkv = 3*8*64
@@ -94,9 +96,23 @@ def train(model, input_words, decoder_inputs, targets, save_path, device, batch_
             batch_idx = indices[i:i+batch_size]
 
             # ---- Build batch ----
-            batch_input = torch.stack([input_words[j] for j in batch_idx]).to(device)
-            batch_decoder = torch.stack([decoder_inputs[j] for j in batch_idx]).to(device)
-            batch_targets = torch.stack([targets[j] for j in batch_idx]).to(device)
+            batch_input = pad_sequence(
+                [input_words[j] for j in batch_idx],
+                batch_first=True,
+                padding_value=0
+            ).to(device)
+
+            batch_decoder = pad_sequence(
+                [decoder_inputs[j] for j in batch_idx],
+                batch_first=True,
+                padding_value=0
+            ).to(device)
+
+            batch_targets = pad_sequence(
+                [targets[j] for j in batch_idx],
+                batch_first=True,
+                padding_value=-100
+            ).to(device)
 
             optimizer.zero_grad()
 
@@ -140,7 +156,33 @@ dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihea
 save(dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked, last_linear_matrices , os.path.join(os.getcwd(), "torch_model.pkl"))
 
 
-ai_model = torch_module.MyTransformer()
+ai_model = torch_module.MyTransformer(vocab_size)
 
+ai_model.load_model("torch_model.pkl")
+
+with open("quetions.json", "r", encoding="utf-8") as f:
+    questions = json.load(f)
+
+with open("answer.json", "r", encoding="utf-8") as f:
+    answers_data = json.load(f)
+
+
+answers_left = [item["left"] for item in answers_data]
+answers_right = [item["right"] for item in answers_data]
+
+print(len(questions), len(answers_left), len(answers_right))
+
+questions = [torch.tensor(x, dtype=torch.long) for x in questions]
+answers_left = [torch.tensor(x, dtype=torch.long) for x in answers_left]
+answers_right = [torch.tensor(x, dtype=torch.long) for x in answers_right]
+
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+print("questions:", min(len(x) for x in questions), max(len(x) for x in questions))
+print("answers_left:", min(len(x) for x in answers_left), max(len(x) for x in answers_left))
+print("answers_right:", min(len(x) for x in answers_right), max(len(x) for x in answers_right))
+
+train(ai_model, questions,answers_left,answers_right,"first_run_model.pt", device, batch_size=1)
 
       

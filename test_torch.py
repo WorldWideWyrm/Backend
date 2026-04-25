@@ -15,7 +15,7 @@ h=8
 def softmax(x, dim=-1):
     return torch.softmax(x, dim=dim)
 def load_model():
-    model_data = torch.load(os.path.join(os.getcwd(), "torch_model.pkl"))
+    model_data = torch.load(os.path.join("first_run_model.pt"))
     return model_data
 
 def token_vectors(model, tokens):
@@ -85,7 +85,7 @@ def multiheaded_attention(attention_model, q_input, kv_input, d_model, h, masked
         ki = k[:, i, :]
         vi = v[:, i, :]
 
-        scores = torch.matmul(qi, ki.T) / torch.sqrt(d_k)
+        scores = torch.matmul(qi, ki.T) / math.sqrt(d_k)
 
         if masked:
             mask = torch.triu(torch.ones_like(scores),diagonal=1) * -1e9
@@ -133,7 +133,7 @@ def output_decifiring(output_tokens, model, input_matrice, d_model, n, h, next_s
 stemmer = Stemmer.Stemmer("english")
 tokenizer = GPT2TokenizerFast.from_pretrained("Xenova/gpt-4", local_files_only=True)
 
-text = input("input: ")
+text = input("User: ")
 
 stemmed = " ".join(stemmer.stemWords(text.split()))
 
