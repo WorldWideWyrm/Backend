@@ -6,6 +6,9 @@ import torch
 import torch.nn as nn
 import chromadb
 from chromadb.utils import embedding_functions
+import sys
+sys.path.append("Backend")
+import torch_module
 
 d_size=50257
 d_model = 512
@@ -59,28 +62,32 @@ for i, doc in enumerate(documents, 1):
 
 tokens = tokenizer.encode("User:" + stemmed )
 
+vocab_size = len(tokenizer)
 
-model = load_model()
+model =  torch_module.MyTransformer(vocab_size)
 
-tokens = token_vectors(model, tokens)
+checkpoint = torch.load("first_run_model.pt", map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+
+model.load_model(checkpoint["model"])
+
+tokens = model.token_vectors(model, tokens)
 
 print(tokens.shape)
 
-tokens, next_start_pos = positional_encoding(tokens, 0, d_model)
+tokens, next_start_pos = model.positional_encoding(tokens, 0, d_model)
 
-input_matrice = input_encoding(model, tokens, d_model, n, h)
+input_matrice = model.input_encoding(model, tokens)
 
 
 output_ids = tokenizer.encode("Model: ")
-output_tokens = token_vectors(model, output_ids)
 
 
 
 for i in range(500):
-    output_tokens = token_vectors(model, output_ids)
+    output_tokens = model.token_vectors( output_ids)
 
-    t = output_decifiring(output_tokens, model, input_matrice, d_model, n, h, next_start_pos)
-
+    t = model.output_decifiring(output_tokens, input_matrice, next_start_pos)
+    t = torch.argmax(model.softmax(t)[-1]).item()
     output_ids.append(t)
 
     if t == tokenizer.eos_token_id:
