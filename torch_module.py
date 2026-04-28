@@ -114,7 +114,8 @@ class MyTransformer(nn.Module):
 
     def positional_encoding(self, tokens, start_pos):
         seq_len = tokens.shape[0]
-        pe = torch.zeros((seq_len, self.d_model), dtype=torch.float32)
+        pe = torch.zeros((seq_len, self.d_model), dtype=torch.float32,
+        device=tokens.device)
 
         for pos in range(seq_len):
             actual_pos = start_pos + pos
@@ -241,7 +242,7 @@ class MyTransformer(nn.Module):
 
         return logits
         
-    def getSentence(inputs):
+    def getSentence(self, inputs):
 
         client = chromadb.PersistentClient(path=CHROMA_PATH)
 
@@ -287,7 +288,7 @@ class MyTransformer(nn.Module):
 
         vocab_size = len(tokenizer)
 
-        model =  torch_module.MyTransformer(vocab_size)
+        model =  self.MyTransformer(vocab_size)
 
         checkpoint = torch.load(
             "first_run_model.pt",
