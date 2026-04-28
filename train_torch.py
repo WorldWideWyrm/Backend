@@ -1,5 +1,4 @@
 from transformers import GPT2TokenizerFast
-from transformers import GPT2TokenizerFast
 import Stemmer
 import sys
 sys.path.append("Backend")
