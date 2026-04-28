@@ -92,7 +92,7 @@ class MyTransformer(nn.Module):
 
     def return_model(self):
         model_data = {
-            'dictonary_vectors': self.dictonary_vectors,
+            'dictonary_vectors': self.dictionary_vectors,
             'multihead_matrices_input': self.multihead_input,
             'multihead_matrices_output': self.multihead_output,
             'multihead_matrices_masked': self.multihead_masked,

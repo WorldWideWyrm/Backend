@@ -66,17 +66,21 @@ vocab_size = len(tokenizer)
 
 model =  torch_module.MyTransformer(vocab_size)
 
-checkpoint = torch.load("first_run_model.pt", map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+checkpoint = torch.load(
+    "first_run_model.pt",
+    map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+    weights_only=False
+)
 
 model.load_model(checkpoint["model"])
 
-tokens = model.token_vectors(model, tokens)
+tokens = model.token_vectors(tokens)
 
 print(tokens.shape)
 
-tokens, next_start_pos = model.positional_encoding(tokens, 0, d_model)
+tokens, next_start_pos = model.positional_encoding(tokens, 0)
 
-input_matrice = model.input_encoding(model, tokens)
+input_matrice = model.input_encoding(tokens)
 
 
 output_ids = tokenizer.encode("Model: ")

@@ -130,7 +130,7 @@ def train(model, input_words, decoder_inputs, targets, save_path, device, batch_
             # ---- Save every 5 minutes ----
             if time.time() - last_save > 300:
                 torch.save({
-                    "model": model.state_dict(),
+                    "model": model.return_model(),
                     "optimizer": optimizer.state_dict(),
                     "step": step
                 }, save_path)
@@ -141,7 +141,7 @@ def train(model, input_words, decoder_inputs, targets, save_path, device, batch_
             # ---- Stop before cutoff ----
             if time.time() - START_TIME > MAX_TIME:
                 torch.save({
-                    "model": model.state_dict(),
+                    "model": model.return_model(),
                     "optimizer": optimizer.state_dict(),
                     "step": step
                 }, save_path.replace(".pt", "_final.pt"))
