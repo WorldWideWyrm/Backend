@@ -132,8 +132,8 @@ class MyTransformer(nn.Module):
         added = tokens_vektors + temp_matric
 
         # Layer normalization
-        mean = torch.mean(added, axis=1, keepdims=True)
-        var = torch.mean((added - mean) ** 2, axis=1, keepdims=True)
+        mean = torch.mean(added, dim=-1, keepdims=True)
+        var = torch.mean((added - mean) ** 2, dim=-1, keepdims=True)
 
         return (added - mean) / torch.sqrt(var + eps)
 
@@ -141,6 +141,12 @@ class MyTransformer(nn.Module):
 
     def multiheaded_attention(self, attention_model, q_input, kv_input, masked=False):
         d_k = self.d_model // self.h
+
+        squeeze_batch = False
+        if q_input.dim() == 2:
+            q_input = q_input.unsqueeze(0)
+            kv_input = kv_input.unsqueeze(0)
+            squeeze_batch = True
 
         Wq, Wk, Wv = torch.chunk(attention_model, 3, dim=1)
 
@@ -168,9 +174,14 @@ class MyTransformer(nn.Module):
         weights = torch.softmax(scores, dim=-1)
         out = torch.matmul(weights, v)
 
-        return out.transpose(1, 2).contiguous().view(
+        out = out.transpose(1, 2).contiguous().view(
             batch_size, q_len, self.d_model
         )
+
+        if squeeze_batch:
+            out = out.squeeze(0)
+
+        return out
 
     def feedfarward(self, feedfarward_model, tokens_vektors):
         W1 = feedfarward_model["W1"]

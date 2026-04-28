@@ -91,7 +91,8 @@ for i in range(500):
     output_tokens = model.token_vectors( output_ids)
 
     t = model.output_decifiring(output_tokens, input_matrice, next_start_pos)
-    t = torch.argmax(model.softmax(t)[-1]).item()
+    print(t)
+    t = torch.argmax(model.softmax(t, dim=-1)[-1]).item()
     output_ids.append(t)
 
     if t == tokenizer.eos_token_id:
