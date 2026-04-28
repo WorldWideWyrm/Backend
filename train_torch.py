@@ -73,7 +73,7 @@ def train(model, input_words, decoder_inputs, targets, save_path, device, batch_
     
     start_step = 0
     if os.path.exists(save_path):
-        checkpoint = torch.load(save_path, map_location=device)
+        checkpoint = torch.load(save_path, map_location=device, weights_only=False)
         model.load_model(checkpoint["model"])
         optimizer.load_state_dict(checkpoint["optimizer"])
         start_step = checkpoint["step"]
