@@ -292,7 +292,7 @@ class MyTransformer(nn.Module):
 
         checkpoint = torch.load(
             "first_run_model.pt",
-            map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+            map_location=torch.device("cpu"),
             weights_only=False
         )
 
