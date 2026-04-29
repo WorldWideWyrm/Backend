@@ -11,7 +11,7 @@ import time
 import random
 import json
 
-tokenizer = GPT2TokenizerFast.from_pretrained("Xenova/gpt-4", local_files_only=True)
+tokenizer = GPT2TokenizerFast.from_pretrained("Xenova/gpt-4")
 vocab_size = len(tokenizer)
 feedforward_matrices = []
 d_model = 512
@@ -152,12 +152,12 @@ def train(model, input_words, decoder_inputs, targets, save_path, device, batch_
 dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked, last_linear_matrices  = matricies_init_ ()
 
 
-save(dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked, last_linear_matrices , os.path.join(os.getcwd(), "torch_model.pkl"))
+save(dictonary_vectors, multihead_matrices_input, multihead_matrices_output, multihead_matrices_masked, feedforward_matrices_input, feedforward_matrices_output, W_O_input, W_O_output, W_O_masked, last_linear_matrices , os.path.join(os.getcwd(), "torch_model.pt"))
 
 
 ai_model = torch_module.MyTransformer(vocab_size)
 
-ai_model.load_model("torch_model.pkl")
+ai_model.load_model("torch_model.pt")
 
 with open("quetions.json", "r", encoding="utf-8") as f:
     questions = json.load(f)
@@ -176,7 +176,8 @@ answers_left = [torch.tensor(x, dtype=torch.long) for x in answers_left]
 answers_right = [torch.tensor(x, dtype=torch.long) for x in answers_right]
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 
 print("questions:", min(len(x) for x in questions), max(len(x) for x in questions))
 print("answers_left:", min(len(x) for x in answers_left), max(len(x) for x in answers_left))
