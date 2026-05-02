@@ -49,25 +49,33 @@ distances = result.get("distances", [[]])[0] if "distances" in result else []
 if not documents:
     print("No results found.")
 
+rag = "User:" + stemmed + " Rag: "
+
 for i, doc in enumerate(documents, 1):
     meta = metadatas[i - 1] if i - 1 < len(metadatas) else {}
     distance = distances[i - 1] if i - 1 < len(distances) else None
 
-    text = text + f"--- RESULTS {i} ---" + f"Titel: {meta.get('title', 'Unknown')}" +f"Pages: {meta.get('start_page', '?')}–{meta.get('end_page', '?')}"
+    rag += (
+        f"RESULTS {i}: "
+        f"Titel: {meta.get('title', 'Unknown')}"
+        f"Pages: {meta.get('start_page', '?')}–{meta.get('end_page', '?')}"
+    )
+
     if distance is not None:
-        text = text + f"Distance: {distance}"
-    text = text + doc
+        rag += f"Distance: {distance}"
+
+    rag += doc
 
 
 
-tokens = tokenizer.encode("User:" + stemmed )
+tokens = tokenizer.encode(rag)
 
 vocab_size = len(tokenizer)
 
 model =  torch_module.MyTransformer(vocab_size)
 
 checkpoint = torch.load(
-    "first_run_model.pt",
+    "first_run_model_final.pt",
     map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
     weights_only=False
 )
@@ -87,16 +95,29 @@ output_ids = tokenizer.encode("Model: ")
 
 
 
-for i in range(500):
-    output_tokens = model.token_vectors( output_ids)
+output_ids = tokenizer.encode("Model:", add_special_tokens=False)
+prefix_len = len(output_ids)
 
-    t = model.output_decifiring(output_tokens, input_matrice, next_start_pos)
-    print(t)
-    t = torch.argmax(model.softmax(t, dim=-1)[-1]).item()
-    output_ids.append(t)
+with torch.no_grad():
+    for i in range(500):
+        output_tensor = torch.tensor(output_ids, dtype=torch.long)
 
-    if t == tokenizer.eos_token_id:
-        break
+        output_tokens = model.token_vectors(output_tensor)
+        logits = model.output_decifiring(output_tokens, input_matrice)
+
+        last_logits = logits[-1, :].clone()
+
+        # prevent immediate EOS
+        if len(output_ids) < prefix_len + 5:
+            last_logits[tokenizer.eos_token_id] = -1e9
+
+        next_id = last_logits.argmax().item()
+        print(next_id, repr(tokenizer.decode([next_id])))
+
+        output_ids.append(next_id)
+
+        if next_id == tokenizer.eos_token_id:
+            break
 
 text = tokenizer.decode(output_ids)
 print(text)

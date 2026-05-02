@@ -15,9 +15,11 @@ class MyTransformer(nn.Module):
         super().__init__()
         self.d_size=vocab_size
         self.d_model = 512
-        self.n=6
+        self.n=4   # this should change 
         self.h=8
-        self.load_model(os.path.join(os.getcwd(), "torch_model.pkl"))
+        self.load_model(os.path.join(os.getcwd(), "torch_model.pt"))
+        self.norm = nn.LayerNorm(self.d_model)
+        self.output_bias = nn.Parameter(torch.zeros(self.d_size))
 
 
     def softmax(self, x, dim=-1):
@@ -86,6 +88,11 @@ class MyTransformer(nn.Module):
 
         # Final projection
         self.last_linear = nn.Parameter(model_data["last_linear_matrices"])
+        
+        if "output_bias" in model_data:
+            self.output_bias.data = model_data["output_bias"]
+
+
 
     def token_vectors(self, tokens):
         return self.dictionary_vectors[tokens]
@@ -107,7 +114,8 @@ class MyTransformer(nn.Module):
             'W_O_input': self.W_O_input,
             'W_O_output': self.W_O_output,
             'W_O_masked': self.W_O_masked,
-            "last_linear_matrices": self.last_linear
+            "last_linear_matrices": self.last_linear,
+            "output_bias": self.output_bias
         }
         return model_data
 
@@ -136,13 +144,14 @@ class MyTransformer(nn.Module):
 
     def add_norm(self, tokens_vektors, temp_matric,  eps=1e-6):
         # Residual connection
-        added = tokens_vektors + temp_matric
+        #added = tokens_vektors + temp_matric
 
         # Layer normalization
-        mean = torch.mean(added, dim=-1, keepdims=True)
-        var = torch.mean((added - mean) ** 2, dim=-1, keepdims=True)
+        #mean = torch.mean(added, dim=-1, keepdims=True)
+        #var = torch.mean((added - mean) ** 2, dim=-1, keepdims=True)
 
-        return (added - mean) / torch.sqrt(var + eps)
+        #return (added - mean) / torch.sqrt(var + eps)
+        return self.norm(tokens_vektors + temp_matric)
 
 
 
@@ -207,7 +216,7 @@ class MyTransformer(nn.Module):
     def output_decifiring(self, output_tokens, input_matrice,  next_start_pos=0):
 
         tokens, _ = self.positional_encoding( output_tokens, next_start_pos)
-
+        
         for i in range(self.n):
             temp_matrice = self.multiheaded_attention( self.multihead_masked[i],tokens, tokens, masked=True)
             temp_matrice = torch.matmul(temp_matrice, self.W_O_masked[i])
@@ -217,7 +226,9 @@ class MyTransformer(nn.Module):
             tokens = self.add_norm(tokens, temp_matrice)
             temp_matrice = self.feedfarward(self.ff_output[i],tokens)
             tokens = self.add_norm(tokens, temp_matrice)
-        logits = torch.matmul(tokens, self.last_linear)
+        
+        logits = torch.matmul(tokens, self.dictionary_vectors.T) + self.output_bias
+
         #probs = self.softmax(logits)
         #next_token = torch.argmax(probs[-1]).item()
         return logits
@@ -236,7 +247,7 @@ class MyTransformer(nn.Module):
             loss_fn = nn.CrossEntropyLoss()
             loss = loss_fn(
                 logits.view(-1, logits.size(-1)),
-                target_ids.view(-1)
+                target_ids.reshape(-1)
             )
             return logits, loss
 

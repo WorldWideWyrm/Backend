@@ -2269,14 +2269,18 @@ def main() -> None:
 
         answer_ids = tokenizer.encode(answer.strip()) + [tokenizer.eos_token_id]
 
-        for start in range(0, len(answer_ids) - 1, CHUNK_SIZE):
-            chunk = answer_ids[start:start + CHUNK_SIZE + 1]
+        bos = tokenizer.bos_token_id
+        if bos is None:
+            bos = tokenizer.eos_token_id
 
-            if len(chunk) < 2:
+        for start in range(0, len(answer_ids), CHUNK_SIZE):
+            chunk = answer_ids[start:start + CHUNK_SIZE]
+
+            if len(chunk) < 1:
                 continue
 
-            left_ids = chunk[:-1]
-            right_ids = chunk[1:]
+            left_ids = [bos] + chunk[:-1]
+            right_ids = chunk
 
             saved_questions.append(question_ids)
             saved_answers.append({
@@ -2286,12 +2290,14 @@ def main() -> None:
 
     
 
-
     print(len(saved_questions), len(saved_answers))
     with open("quetions.json", "w", encoding="utf-8") as out:
         json.dump(saved_questions, out, ensure_ascii=False, indent=2)
     with open("answer.json", "w", encoding="utf-8") as out:
         json.dump(saved_answers, out, ensure_ascii=False, indent=2)
+
+    
+
 
     
 if __name__ == "__main__":

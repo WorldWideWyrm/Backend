@@ -19,7 +19,7 @@ d_size = vocab_size
 fan_in = d_model
 fan_out = d_model
 qkv = 3*8*64
-n = 6
+n = 4 # should change 
 limit = math.sqrt(6 / (d_model *2))
 d_ff = 2048
 
@@ -67,7 +67,10 @@ def train(model, input_words, decoder_inputs, targets, save_path, device, batch_
     model = model.to(device)
     model.train()
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=lr
+    )
 
     
     start_step = 0
@@ -117,7 +120,12 @@ def train(model, input_words, decoder_inputs, targets, save_path, device, batch_
 
             logits, loss = model(batch_input, batch_decoder, batch_targets)
 
+
+            
+
             loss.backward()
+
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
 
             step += 1
@@ -183,6 +191,10 @@ print("questions:", min(len(x) for x in questions), max(len(x) for x in question
 print("answers_left:", min(len(x) for x in answers_left), max(len(x) for x in answers_left))
 print("answers_right:", min(len(x) for x in answers_right), max(len(x) for x in answers_right))
 
-train(ai_model, questions,answers_left,answers_right,"first_run_model.pt", device, batch_size=1)
 
-      
+#print("first decoder len:", len(answers_left[0]))
+#print("first target len:", len(answers_right[0]))
+#print("decoder:", answers_left[0])
+#print("target:", answers_right[0])
+train(ai_model, questions,answers_left,answers_right,"first_run_model.pt", device, batch_size=1)
+   
