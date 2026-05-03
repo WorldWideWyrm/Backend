@@ -1,12 +1,27 @@
 import chromadb
 from sentence_transformers import SentenceTransformer
 import os
+import shutil
 
-client = chromadb.PersistentClient(path="./chroma_db")
+DB_PATH = "./chroma_db2"
+COLLECTION_NAME = "dnd_memory"
 
-collection = client.get_or_create_collection(name="dnd_memory")
+client = None
+collection = None
+embedding_model = None
 
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+def reset_database():
+    if os.path.exists(DB_PATH):
+        shutil.rmtree(DB_PATH)
+
+
+def init_database():
+    global client, collection, embedding_model
+
+    client = chromadb.PersistentClient(path=DB_PATH)
+    collection = client.get_or_create_collection(name=COLLECTION_NAME)
+    embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 def chunk_session_text(text, chunk_size=120, overlap=20):
@@ -88,6 +103,6 @@ def session_chunking():
             print(chunk)
 
 if __name__ == "__main__":
-    
-
+    reset_database()
+    init_database()
     session_chunking()
