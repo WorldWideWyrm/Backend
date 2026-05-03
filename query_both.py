@@ -30,55 +30,55 @@ def query_collection(collection, query, n_results=5):
 
 
 def query_rules(collection, query):
-    result = query_collection(
-        collection,
-        query
-    )
+    result = query_collection(collection, query)
 
     documents = result.get("documents", [[]])[0]
     metadatas = result.get("metadatas", [[]])[0]
     distances = result.get("distances", [[]])[0]
 
-    print("\n==============================")
-    print("RULES / HANDBOOK RESULTS")
-    print("==============================")
+    output = []
+    output.append("\n==============================")
+    output.append("RULES / HANDBOOK RESULTS")
+    output.append("==============================")
 
     if not documents:
-        print("No rule results found.")
-        return
+        output.append("No rule results found.")
+        return "\n".join(output)
 
     for i, doc in enumerate(documents, 1):
         meta = metadatas[i - 1] if i - 1 < len(metadatas) else {}
         distance = distances[i - 1] if i - 1 < len(distances) else None
 
-        print(f"\n--- Rule Result {i} ---")
-        print(f"Title: {meta.get('title', 'Unknown')}")
-        print(f"Pages: {meta.get('start_page', '?')}–{meta.get('end_page', '?')}")
+        output.append(f"\n--- Rule Result {i} ---")
+        output.append(f"Title: {meta.get('title', 'Unknown')}")
+        output.append(
+            f"Pages: {meta.get('start_page', '?')}–{meta.get('end_page', '?')}"
+        )
 
         if distance is not None:
-            print(f"Distance: {distance}")
+            output.append(f"Distance: {distance}")
 
-        print()
-        print(doc)
+        output.append("")
+        output.append(doc)
+
+    return "\n".join(output)
 
 
 def query_memory(collection, query):
-    result = query_collection(
-            collection,
-            query
-        )
+    result = query_collection(collection, query)
 
     documents = result.get("documents", [[]])[0]
     metadatas = result.get("metadatas", [[]])[0]
     distances = result.get("distances", [[]])[0]
 
-    print("\n==============================")
-    print("DND MEMORY / CAMPAIGN RESULTS")
-    print("==============================")
+    output = []
+    output.append("\n==============================")
+    output.append("DND MEMORY / CAMPAIGN RESULTS")
+    output.append("==============================")
 
     if not documents:
-        print("No campaign memory results found.")
-        return
+        output.append("No campaign memory results found.")
+        return "\n".join(output)
 
     already_printed = set()
 
@@ -89,16 +89,16 @@ def query_memory(collection, query):
         session = meta.get("session")
         chunk_index = meta.get("chunk_index")
 
-        print(f"\n--- Memory Match {i} ---")
-        print(f"Session: {session}")
-        print(f"Chunk: {chunk_index}")
+        output.append(f"\n--- Memory Match {i} ---")
+        output.append(f"Session: {session}")
+        output.append(f"Chunk: {chunk_index}")
 
         if distance is not None:
-            print(f"Distance: {distance}")
+            output.append(f"Distance: {distance}")
 
         if session is None or chunk_index is None:
-            print()
-            print(doc)
+            output.append("")
+            output.append(doc)
             continue
 
         context_start = max(1, chunk_index - MEMORY_CONTEXT_RADIUS)
@@ -142,21 +142,23 @@ def query_memory(collection, query):
             key=lambda item: item["metadata"].get("chunk_index", 0)
         )
 
-        print()
-        print(
+        output.append("")
+        output.append(
             f"Context from session {session}, "
             f"chunks {context_start}–{context_end}:"
         )
-        print()
+        output.append("")
 
         for item in context_items:
             context_meta = item["metadata"]
-            print(f"[Chunk {context_meta.get('chunk_index')}]")
-            print(item["document"])
-            print()
+            output.append(f"[Chunk {context_meta.get('chunk_index')}]")
+            output.append(item["document"])
+            output.append("")
+
+    return "\n".join(output)
 
 
-def main():
+def main(query=None):
 
     rules_collection = get_collection(
         RULES_DB_PATH,
@@ -167,16 +169,19 @@ def main():
         MEMORY_DB_PATH,
         MEMORY_COLLECTION
     )
-
-    query = input("What would you like to know? ").strip()
+    if query == None: 
+        query = input("What would you like to know? ").strip()
 
     if not query:
         print("No query.")
         return
 
-    query_rules(rules_collection, query)
-    query_memory(memory_collection, query)
+    main_output = []
+    main_output.append(query_rules(rules_collection, query))
+    main_output.append(query_memory(memory_collection, query))
+    return "\n".join(main_output)
+
 
 
 if __name__ == "__main__":
-    main()
+    print(main())
