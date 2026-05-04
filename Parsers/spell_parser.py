@@ -6,8 +6,9 @@ SPELL_SECTION_END = 343
 
 def is_spell_start(lines, i):
     return (
-        i + 2 < len(lines)
-        and "Casting Time" in lines[i + 2]
+        i + 3 < len(lines)
+        and ("Level" in lines[i + 1] or "Cantrip" in lines[i + 1])
+        and ("Casting Time" in lines[i + 2] or "Casting Time" in lines[i + 3])
         and not lines[i].lower().startswith("chapter")
         and not lines[i].lower().startswith("appendix")
     )
