@@ -49,7 +49,6 @@ def chatCall(query, new_session=None):
         ],
         model="llama-3.3-70b-versatile",
     )
-    return chat_completion.choices[0].message.content
     return chat_completion.choices[0].message.content, user_content 
 
 def should_include_last_session(query):
