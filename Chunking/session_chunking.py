@@ -77,8 +77,11 @@ def session_key(filename):
     return int(filename.split('_')[1].split('.')[0])
 
 
-def session_chunking():
+def session_chunking(new_sesion=None):
     file_texts = get_files()
+
+    if new_sesion != None:
+        file_texts.append(new_sesion)
 
     print(file_texts)
 
@@ -102,7 +105,11 @@ def session_chunking():
             print(f"\n--- Chunk {i} ---")
             print(chunk)
 
-if __name__ == "__main__":
+
+def update(New_session=None):
     reset_database()
     init_database()
-    session_chunking()
+    session_chunking(New_session)
+
+if __name__ == "__main__":
+    update()
