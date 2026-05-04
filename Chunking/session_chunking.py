@@ -12,16 +12,28 @@ embedding_model = None
 
 
 def reset_database():
-    if os.path.exists(DB_PATH):
-        shutil.rmtree(DB_PATH)
+    global collection
+
+    init_database()
+
+    try:
+        client.delete_collection(COLLECTION_NAME)
+    except Exception:
+        pass
+
+    collection = client.get_or_create_collection(name=COLLECTION_NAME)
 
 
 def init_database():
     global client, collection, embedding_model
 
-    client = chromadb.PersistentClient(path=DB_PATH)
+    if client is None:
+        client = chromadb.PersistentClient(path=DB_PATH)
+
     collection = client.get_or_create_collection(name=COLLECTION_NAME)
-    embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    if embedding_model is None:
+        embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 def chunk_session_text(text, chunk_size=120, overlap=20):
@@ -83,14 +95,14 @@ def session_chunking(new_sesion=None):
     if new_sesion != None:
         file_texts.append(new_sesion)
 
-    print(file_texts)
+    #print(file_texts)
 
     for z, text in enumerate(file_texts, start=1):
 
 
         chunks = chunk_session_text(text, chunk_size=20, overlap=5)
-        print(f"\n--- Session {z} ---")
-        print(f"Number of chunks: {len(chunks)}")
+        #print(f"\n--- Session {z} ---")
+        #print(f"Number of chunks: {len(chunks)}")
         for i, chunk in enumerate(chunks, start=1):
             collection.add(
                 documents=[chunk], 
@@ -102,13 +114,12 @@ def session_chunking(new_sesion=None):
                 }],
                 ids=[f"s{z}_c{i}"]
             )
-            print(f"\n--- Chunk {i} ---")
-            print(chunk)
+            #print(f"\n--- Chunk {i} ---")
+            #print(chunk)
 
 
 def update(New_session=None):
     reset_database()
-    init_database()
     session_chunking(New_session)
 
 if __name__ == "__main__":
