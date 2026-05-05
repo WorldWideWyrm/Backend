@@ -19,7 +19,7 @@ d_size = vocab_size
 fan_in = d_model
 fan_out = d_model
 qkv = 3*8*64
-n = 4 # should change 
+n = 3 # should change 
 limit = math.sqrt(6 / (d_model *2))
 d_ff = 2048
 
@@ -63,7 +63,7 @@ def log(message, path="train_log.txt"):
     with open(path, "a") as f:
         f.write(message + "\n")
 
-def train(model, input_words, decoder_inputs, targets, save_path, device, batch_size=8, lr=3e-4):
+def train(model, input_words, decoder_inputs, targets, save_path, device, batch_size=8, lr=5e-4):
     model = model.to(device)
     model.train()
 

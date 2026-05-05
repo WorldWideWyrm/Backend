@@ -75,7 +75,7 @@ vocab_size = len(tokenizer)
 model =  torch_module.MyTransformer(vocab_size)
 
 checkpoint = torch.load(
-    "first_run_model_final.pt",
+    "first_run_model.pt",
     map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
     weights_only=False
 )
@@ -104,6 +104,7 @@ with torch.no_grad():
 
         output_tokens = model.token_vectors(output_tensor)
         logits = model.output_decifiring(output_tokens, input_matrice)
+
 
         last_logits = logits[-1, :].clone()
 

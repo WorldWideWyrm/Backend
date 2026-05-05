@@ -15,7 +15,7 @@ class MyTransformer(nn.Module):
         super().__init__()
         self.d_size=vocab_size
         self.d_model = 512
-        self.n=4   # this should change 
+        self.n=3   # this should change 
         self.h=8
         self.load_model(os.path.join(os.getcwd(), "torch_model.pt"))
         self.norm = nn.LayerNorm(self.d_model)
@@ -226,7 +226,7 @@ class MyTransformer(nn.Module):
             tokens = self.add_norm(tokens, temp_matrice)
             temp_matrice = self.feedfarward(self.ff_output[i],tokens)
             tokens = self.add_norm(tokens, temp_matrice)
-        
+            #print(tokens)
         logits = torch.matmul(tokens, self.dictionary_vectors.T) + self.output_bias
 
         #probs = self.softmax(logits)
