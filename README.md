@@ -28,7 +28,7 @@ pip install groq
 
 
 # Step 2.
-Create pdfs file in root
+Create pdfs folder in root
 
 
 # Step 3.
