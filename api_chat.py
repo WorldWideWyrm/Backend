@@ -3,13 +3,16 @@ import os
 
 from groq import Groq
 import sys
-sys.path.append("Backend")
-sys.path.append("Chunking")
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+CHUNKING_DIR = os.path.join(BACKEND_DIR, "Chunking")
+
+sys.path.insert(0, BACKEND_DIR)
+sys.path.insert(0, CHUNKING_DIR)
 import query_both
 import session_chunking
 
 client = Groq(
-    api_key=#use key here, https://console.groq.com/
+    api_key="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",
 )
 
 SYSTEM_PROMPT = """

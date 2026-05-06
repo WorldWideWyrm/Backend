@@ -63,7 +63,7 @@ def log(message, path="train_log.txt"):
     with open(path, "a") as f:
         f.write(message + "\n")
 
-def train(model, input_words, decoder_inputs, targets, save_path, device, batch_size=8, lr=5e-4):
+def train(model, input_words, decoder_inputs, targets, save_path, device, batch_size=8, lr=1e-4):
     model = model.to(device)
     model.train()
 
