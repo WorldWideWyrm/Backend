@@ -1,10 +1,13 @@
 from sentence_transformers import SentenceTransformer
 import chromadb
+import os
+current_dir = os.path.dirname(__file__)
+backend_path = os.path.abspath(os.path.join(current_dir, '..', 'Backend'))
 
-RULES_DB_PATH = "chroma_db"
+RULES_DB_PATH = backend_path + "/chroma_db"
 RULES_COLLECTION = "handbook"
 
-MEMORY_DB_PATH = "./chroma_db2"
+MEMORY_DB_PATH = backend_path + "/chroma_db2"
 MEMORY_COLLECTION = "dnd_memory"
 MEMORY_CONTEXT_RADIUS = 10
 

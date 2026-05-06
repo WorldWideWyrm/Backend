@@ -2,8 +2,11 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 import os
 import shutil
+import os
+current_dir = os.path.dirname(__file__)
+backend_path = os.path.abspath(os.path.join(current_dir, '..', 'Backend'))
 
-DB_PATH = "./chroma_db2"
+DB_PATH = backend_path + "/chroma_db2"
 COLLECTION_NAME = "dnd_memory"
 
 client = None
