@@ -7,9 +7,10 @@ sys.path.append("Backend")
 sys.path.append("Chunking")
 import query_both
 import session_chunking
+import time
 
 client = Groq(
-    api_key=#use key here, https://console.groq.com/
+    api_key=""
 )
 
 SYSTEM_PROMPT = """
@@ -40,7 +41,10 @@ def chatCall(query, new_session=None):
 
     if include_last:
         last_session = get_last_session()
-        user_content += f"\n\nLast session:\n{last_session}"
+        if(last_session!=None):
+            user_content += f"\n\nLast session:\n{last_session}"
+        else:
+            user_content += f"\n\nLast session:\n No last session"
 
     chat_completion = client.chat.completions.create(
         messages=[
@@ -49,7 +53,7 @@ def chatCall(query, new_session=None):
         ],
         model="llama-3.3-70b-versatile",
     )
-    return chat_completion.choices[0].message.content, user_content 
+    return chat_completion.choices[0].message.content#, user_content 
 
 def should_include_last_session(query):
     keywords = ["last time", "previous", "last session"]
@@ -66,14 +70,15 @@ def get_last_session():
     for filename in sorted(os.listdir(target_path), key=session_chunking.session_key):
         file_path = os.path.join(target_path, filename)
         # Get file creation/modification time
-        file_time = datetime.fromtimestamp(os.path.getmtime(file_path)).date()
-
+        file_time = time.ctime(os.path.getctime(file_path))
         # Skip files created/modified today
         if file_time == today:
           continue
         if os.path.isfile(file_path):  
             with open(file_path, "r", encoding="utf-8") as f:
                 file_texts.append(f.read())
+    if len(file_texts) == 0:
+        return None
     return file_texts[len(file_texts)-1]
 
 if __name__ == "__main__":
