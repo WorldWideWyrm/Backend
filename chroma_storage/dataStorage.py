@@ -128,9 +128,9 @@ def main() -> None:
             metadatas=metadatas[i:i + batch_size],
         )
 
-    print(f"Indsat {len(rule_chunks)} rule/spell-rule chunks")
-    print(f"Indsat {len(spell_chunks)} spells")
-    print(f"Indsat {len(all_chunks)} chunks i collection '{COLLECTION_NAME}'")
+    print(f"Stored {len(rule_chunks)} rule/spell-rule chunks")
+    print(f"Stored {len(spell_chunks)} spells")
+    print(f"Stored {len(all_chunks)} chunks in collection '{COLLECTION_NAME}'")
 
 
 if __name__ == "__main__":
