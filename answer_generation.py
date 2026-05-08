@@ -5,6 +5,7 @@ import api_chat
 import json
 import time
 from pathlib import Path
+from groq import Groq
 
 INPUT_FILE = Path("qa_pairs.txt")
 OUTPUT_FILE = Path("questions2.json")
@@ -12,6 +13,8 @@ ANSWERS_FILE = Path("answers2.json")
 
 MAX_RETRIES = 5
 BASE_WAIT_SECONDS = 60*30
+
+client_keys =
 
 
 def load_json(path, default):
@@ -34,13 +37,13 @@ with open(INPUT_FILE, "r", encoding="utf-8") as f:
         line = line.strip()
         if line.startswith("Q:"):
             all_questions.append(line[2:].strip())
-
+i= 0
 for index, question in enumerate(all_questions[completed_count:], start=completed_count):
     print(f"Processing {index + 1}/{len(all_questions)}")
 
     for attempt in range(MAX_RETRIES):
         try:
-            answer, user_context = api_chat.chatCall(question)
+            answer, user_context = api_chat.chatCall(question,client_keys[i])
 
             answers.append(answer)
             questions.append(user_context)
@@ -57,11 +60,17 @@ for index, question in enumerate(all_questions[completed_count:], start=complete
         except Exception as e:
             wait_time = BASE_WAIT_SECONDS * (2 ** attempt)
 
-            print(f"Error on question {index + 1}: {e}")
 
-            if attempt == MAX_RETRIES - 1:
-                print("Max retries reached. Saving progress and stopping.")
-                sys.exit(1)
 
-            print(f"Waiting {wait_time} seconds before retrying...")
-            time.sleep(wait_time)
+            if i == len(client_keys)-1:
+                print(f"Error on question {index + 1}: {e}")
+
+                if attempt == MAX_RETRIES - 1:
+                    print("Max retries reached. Saving progress and stopping.")
+                    sys.exit(1)
+
+                print(f"Waiting {wait_time} seconds before retrying...")
+                time.sleep(wait_time)
+                i=0
+            else:
+                i += 1

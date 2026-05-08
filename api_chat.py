@@ -12,10 +12,8 @@ import query_both
 import session_chunking
 import time
 
-client = Groq(
-    api_key=""
-
-)
+#client = Groq(  
+#    api_key="")
 
 SYSTEM_PROMPT = """
 You are a helpful assistant answering questions using the provided RAG context.
@@ -24,6 +22,7 @@ Rules:
 - Use the RAG context over general knowledge.
 - Use the last session for if they as for notes or resumes from last session or time, it will only be included it they use the word 'last time', 'previous' or 'last session' is used.
 - If the RAG context or the last session does not contain the answer, say you do not know and give reccomendation based on the rag data and your own knoledge on how to refrase the question.
+- If the question refer to all or each of something, the rag will probably not return all of said categori, then responed with examples from the rag if possible but refer them to the book
 - Do not invent sources or facts.
 - Answer clearly and concisely.
 """
