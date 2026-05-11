@@ -16,10 +16,10 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 import os
 
-RULES_DB_PATH = storage_path + "/chroma_db"
+RULES_DB_PATH = os.path.join(storage_path, "chroma_db") 
 RULES_COLLECTION = "handbook"
 
-MEMORY_DB_PATH = storage_path + "/chroma_db2"
+MEMORY_DB_PATH = os.path.join(storage_path, "chroma_db2") 
 MEMORY_COLLECTION = "dnd_memory"
 MEMORY_CONTEXT_RADIUS = 10
 

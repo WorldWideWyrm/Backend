@@ -68,16 +68,16 @@ def get_last_session():
     target_path = os.path.join(parent_dir, "front_end", "previous_sessions")
 
     file_texts = []
-    today = datetime.date.today()
-    
+    today = datetime.datetime.now().date()
+
     for filename in sorted(os.listdir(target_path), key=session_chunking.session_key):
         file_path = os.path.join(target_path, filename)
         # Get file creation/modification time
-        file_time = time.ctime(os.path.getctime(file_path))
+        file_time = datetime.datetime.fromtimestamp(os.path.getctime(file_path)).date()
         # Skip files created/modified today
         if file_time == today:
           continue
-        if os.path.isfile(file_path):  
+        if os.path.isfile(file_path):
             with open(file_path, "r", encoding="utf-8") as f:
                 file_texts.append(f.read())
     if len(file_texts) == 0:
