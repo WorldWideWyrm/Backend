@@ -17,7 +17,7 @@ from sentence_transformers import SentenceTransformer
 import shutil
 import os
 
-DB_PATH = storage_path + "/chroma_db2"
+DB_PATH = os.path.join(storage_path, "chroma_db2") 
 COLLECTION_NAME = "dnd_memory"
 
 client = None
