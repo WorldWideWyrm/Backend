@@ -17,11 +17,12 @@ from pathlib import Path
 
 import chromadb
 from chromadb.utils import embedding_functions
+import os
 
 INPUT_RULES = Path("pdfs/rules_chunks.json")
 INPUT_SPELLS = Path("pdfs/spell_chunks.json")
 
-CHROMA_PATH = "chroma_db"
+CHROMA_PATH = os.path.join(storage_path, "chroma_db") 
 COLLECTION_NAME = "handbook"
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
