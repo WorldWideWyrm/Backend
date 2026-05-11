@@ -12,8 +12,8 @@ import query_both
 import session_chunking
 import time
 
-#client = Groq(  
-#    api_key="")
+client = Groq(  
+    api_key="")
 
 SYSTEM_PROMPT = """
 You are a helpful assistant answering questions using the provided RAG context.
@@ -27,7 +27,7 @@ Rules:
 - Answer clearly and concisely.
 """
 
-def chatCall(query, new_session=None):
+def chatCall(query,  new_session=None):
     session_chunking.update(new_session)
      
     rag = query_both.main(query=query)

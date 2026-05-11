@@ -1,13 +1,25 @@
+from pathlib import Path
+
+current = Path(__file__).resolve()
+
+# walk upward through parent folders
+for parent in current.parents:
+    storage_path = parent / "Storage"
+
+    if storage_path.exists() and storage_path.is_dir():
+        STORAGE_DIR = storage_path
+        break
+else:
+    raise FileNotFoundError("Could not find storage folder")
+
 from sentence_transformers import SentenceTransformer
 import chromadb
 import os
-current_dir = os.path.dirname(__file__)
-backend_path = os.path.abspath(os.path.join(current_dir, '..', 'Backend'))
 
-RULES_DB_PATH = backend_path + "/chroma_db"
+RULES_DB_PATH = storage_path + "/chroma_db"
 RULES_COLLECTION = "handbook"
 
-MEMORY_DB_PATH = backend_path + "/chroma_db2"
+MEMORY_DB_PATH = storage_path + "/chroma_db2"
 MEMORY_COLLECTION = "dnd_memory"
 MEMORY_CONTEXT_RADIUS = 10
 

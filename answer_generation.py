@@ -14,8 +14,7 @@ ANSWERS_FILE = Path("answers2.json")
 MAX_RETRIES = 5
 BASE_WAIT_SECONDS = 60*30
 
-client_keys =
-
+client_keys =  []
 
 def load_json(path, default):
     if path.exists():

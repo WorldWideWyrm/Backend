@@ -1,3 +1,17 @@
+from pathlib import Path
+
+current = Path(__file__).resolve()
+
+# walk upward through parent folders
+for parent in current.parents:
+    storage_path = parent / "Storage"
+
+    if storage_path.exists() and storage_path.is_dir():
+        STORAGE_DIR = storage_path
+        break
+else:
+    raise FileNotFoundError("Could not find storage folder")
+
 import json
 from pathlib import Path
 
