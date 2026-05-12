@@ -1,49 +1,61 @@
 # Backend
-Rag based Slm solution
+Rag based SLM solution
 
 
 # Step 1.
 Install all the required dependencies:
 
-* ChromaDB -
+* **ChromaDB** -
   pip install chromadb
 
-* Sentence-Transformers -
+* **Sentence-Transformers** -
   pip install -U sentence-transformers
 
-* Torch -
+* **Torch** -
 pip install torch
 
-* Stemmer -
+* **Stemmer** -
 pip install PyStemmer
 
-* Transformers -
+* **Transformers** -
 pip install transformers
 
-* Fitz/pymupdf -
+* **Fitz/pymupdf** -
 pip install pymupdf
 
-* Groq model used with API token calls -
+* **Groq model used with API token calls** -
 pip install groq
 
 
 # Step 2.
-Create "pdfs" folder in Backend root: location = Backend/pdfs
-Add cleaned_pages.json file to pdfs folder *This file is a secret*
+Create "pdfs" folder in Backend root: <br /> 
+**Backend/** <br />
+
+Add cleaned_pages.json file to pdfs folder *This file is a secret*: <br />
+**Backend/pdfs** <br />
 
 
 # Step 3.
-Create  "Storage" folder in Backend root: location = Backend/Storage
-Create "previous_sessions" folder in Storage: location = Backend/Storage/previous_sessions
+Create  "Storage" folder in Backend root: <br /> 
+**Backend/** <br />
+
+Create "previous_sessions" folder in Storage: <br /> 
+**Backend/Storage/** <br />
 
 
 # Step 4.
-run -->
-spell_parser.py
-rule_parser.py
-session_chunking.py
-rule_chunking.py
-dataStorage.py
+Run the stated files below: <br />
+
+**Backend/Parsers/:** <br />
+spell_parser.py <br />
+rule_parser.py <br />
+
+**Backend/Chunking/:** <br />
+session_chunking.py <br />
+rule_chunking.py <br />
+
+**Backend/chroma_storage/:** <br />
+dataStorage.py <br />
 
 
 # Step 5.
