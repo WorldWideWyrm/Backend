@@ -28,11 +28,13 @@ pip install groq
 
 
 # Step 2.
-Create pdfs folder in root
+Create "pdfs" folder in Backend root: location = Backend/pdfs
+Add cleaned_pages.json file to pdfs folder *This file is a secret*
+
 
 # Step 3.
-Create a folder Called "Storage" at the same level as this Backend.
-and "previous_sessions" folder within it.
+Create  "Storage" folder in Backend root: location = Backend/Storage
+Create "previous_sessions" folder in Storage: location = Backend/Storage/previous_sessions
 
 
 # Step 4.
