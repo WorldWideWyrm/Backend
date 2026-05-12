@@ -37,10 +37,10 @@ Add cleaned_pages.json file to pdfs folder *This file is a secret*: <br />
 
 # Step 3.
 Create  "Storage" folder outside of Backend root: <br /> 
-**Root/Storage/** <br />
+**../Storage/** <br />
 
 Create "previous_sessions" folder in Storage: <br /> 
-**Backend/Storage/** <br />
+**../Storage/previous_sessions** <br />
 
 
 # Step 4.
