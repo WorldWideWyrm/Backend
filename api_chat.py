@@ -1,3 +1,17 @@
+from pathlib import Path
+
+current = Path(__file__).resolve()
+
+# walk upward through parent folders
+for parent in current.parents:
+    storage_path = parent / "Storage"
+
+    if storage_path.exists() and storage_path.is_dir():
+        STORAGE_DIR = storage_path
+        break
+else:
+    raise FileNotFoundError("Could not find storage folder")
+
 import datetime
 import os
 
@@ -12,8 +26,8 @@ import query_both
 import session_chunking
 import time
 
-client = Groq(  
-    api_key="")
+#client = Groq(  
+#    api_key="")
 
 SYSTEM_PROMPT = """
 You are a helpful assistant answering questions using the provided RAG context.
@@ -27,7 +41,7 @@ Rules:
 - Answer clearly and concisely.
 """
 
-def chatCall(query,  new_session=None):
+def chatCall(query, client, new_session=None):
     session_chunking.update(new_session)
      
     rag = query_both.main(query=query)
@@ -63,9 +77,7 @@ def should_include_last_session(query):
     return any(k in query.lower() for k in keywords)
 
 def get_last_session():
-    parent_dir = os.path.dirname(os.getcwd())
-
-    target_path = os.path.join(parent_dir, "front_end", "previous_sessions")
+    target_path = os.path.join(storage_path, "previous_sessions")
 
     file_texts = []
     today = datetime.datetime.now().date()
