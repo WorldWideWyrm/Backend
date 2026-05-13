@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 current = Path(__file__).resolve()
 
@@ -26,8 +27,8 @@ import query_both
 import session_chunking
 import time
 
-#client = Groq(  
-#    api_key="")
+# client = Groq(  
+#     api_key="")
 
 SYSTEM_PROMPT = """
 You are a helpful assistant answering questions using the provided RAG context.
@@ -43,6 +44,8 @@ Rules:
 
 def chatCall(query, client, new_session=None):
     session_chunking.update(new_session)
+
+    re.sub(r'[^a-zA-Z0-9!?,.]', '', query)
      
     rag = query_both.main(query=query)
 
