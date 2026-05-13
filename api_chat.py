@@ -45,7 +45,7 @@ Rules:
 def chatCall(query, client, new_session=None):
     session_chunking.update(new_session)
 
-    re.sub(r'[^a-zA-Z0-9!?,.]', '', query)
+    re.sub(r'[^a-zA-Z0-9!?,. ]', '', query)
      
     rag = query_both.main(query=query)
 
