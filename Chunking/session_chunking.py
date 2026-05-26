@@ -16,6 +16,7 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 import shutil
 import os
+import re
 
 DB_PATH = os.path.join(storage_path, "chroma_db2") 
 COLLECTION_NAME = "dnd_memory"
@@ -113,7 +114,7 @@ def session_chunking(new_sesion=None):
 
     for z, text in enumerate(file_texts, start=1):
 
-
+        re.sub(r'[^a-zA-Z0-9!?,. ]', '', text)
         chunks = chunk_session_text(text, chunk_size=20, overlap=5)
         #print(f"\n--- Session {z} ---")
         #print(f"Number of chunks: {len(chunks)}")
