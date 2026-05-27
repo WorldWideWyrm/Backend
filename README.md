@@ -46,15 +46,7 @@ Create "previous_sessions" folder in Storage: <br />
 # Step 4.
 Run the stated files below: <br />
 
-**Backend/Parsers/:** <br />
-spell_parser.py <br />
-rule_parser.py <br />
-
-**Backend/Chunking/:** <br />
-session_chunking.py <br />
-rule_chunking.py <br />
-
-**Backend/chroma_storage/:** <br />
+**Backend/chroma_pipeline/:** <br />
 dataStorage.py <br />
 
 

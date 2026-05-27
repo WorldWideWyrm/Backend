@@ -16,7 +16,7 @@ else:
 import datetime
 import os
 
-from groq import Groq
+from groq_llama_strategy import GroqLlamaStrategy
 import sys
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
 CHUNKING_DIR = os.path.join(BACKEND_DIR, "Chunking")
@@ -27,22 +27,9 @@ import query_both
 import session_chunking
 import time
 
-# client = Groq(  
-#     api_key="")
+chat_strategy = GroqLlamaStrategy("") # api_key only string
 
-SYSTEM_PROMPT = """
-You are a helpful assistant answering questions using the provided RAG context.
-
-Rules:
-- Use the RAG context over general knowledge.
-- Use the last session for if they as for notes or resumes from last session or time, it will only be included if the query uses the word 'last time', 'previous' or 'last session' is used.
-- If the RAG context or the last session does not contain the answer, say you do not know and give recomendation based on the RAG data and your own knowledge on how to rephrase the question.
-- If the question refers to all or each of something, the RAG will probably not return all of said category, then responed with examples from the RAG if possible but refer them to the book
-- Do not invent sources or facts.
-- Answer clearly and concisely.
-"""
-
-def chatCall(query, client, new_session=None):
+def chatCall(query, new_session=None):
     session_chunking.update(new_session)
 
     re.sub(r'[^a-zA-Z0-9!?,. ]', '', query)
@@ -66,14 +53,8 @@ def chatCall(query, client, new_session=None):
         else:
             user_content += f"\n\nLast session:\n No last session"
 
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_content},
-        ],
-        model="llama-3.3-70b-versatile",
-    )
-    return chat_completion.choices[0].message.content#, user_content 
+    
+    return chat_strategy.chat(user_content)
 
 def should_include_last_session(query):
     keywords = ["last time", "previous", "last session"]
