@@ -1,0 +1,80 @@
+Bootstrap: docker
+From: nvidia/cuda:12.1.1-cudnn-devel-ubuntu22.04
+
+%post
+    set -eux
+
+    # System deps
+    apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        wget curl git git-lfs ca-certificates \
+        build-essential software-properties-common \
+        python3.10 python3.10-venv python3.10-distutils python3.10-dev \
+        cmake ninja-build pkg-config \
+        libaio1 libaio-dev \
+        && rm -rf /var/lib/apt/lists/*
+    git lfs install
+
+    # Make python3.10 default
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+
+    # pip
+    wget https://bootstrap.pypa.io/get-pip.py
+    python3.10 get-pip.py
+    rm get-pip.py
+    python3.10 -m pip install --upgrade pip setuptools wheel packaging
+
+    # CUDA env
+    echo 'export PATH=/usr/local/cuda/bin:$PATH' >> /etc/profile.d/cuda.sh
+    echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH' >> /etc/profile.d/cuda.sh
+    echo 'export CUDA_HOME=/usr/local/cuda' >> /etc/profile.d/cuda.sh
+
+    # Pin known-good versions (CUDA 12.1 stack)
+    # Torch + cu121
+    python3.10 -m pip install --upgrade \
+        torch==2.4.1 --extra-index-url https://download.pytorch.org/whl/cu121
+
+    # Core libs
+    python3.10 -m pip install --upgrade \
+        transformers==4.45.2 \
+        accelerate==0.34.2 \
+        datasets==2.20.0 \
+        sentence-transformers==3.1.1 \
+        peft==0.12.0 \
+        bitsandbytes==0.43.1 \
+        vllm==0.5.4.post1 \
+        scipy==1.13.1 \
+        safetensors==0.4.5 \
+        huggingface-hub==0.25.2 \
+        einops==0.8.0 \
+        fire==0.6.0 \
+        numpy==1.26.4 \
+        pandas==2.2.2
+
+    # flash-attn build (works on CUDA 12.x; L4 is SM_89)
+    # If build fails on your cluster, you can omit it; code will still run without flash attention.
+    export MAX_JOBS=$(nproc)
+    python3.10 -m pip install --no-build-isolation flash-attn==2.6.3
+
+    # Optional: DeepSpeed (for ZeRO-2/3)
+    # Building CUDA ops requires nvcc (present in this devel image)
+    # If building is restricted, set DS_BUILD_OPS=0 to skip kernels (reduced performance).
+    DS_BUILD_OPS=1 python3.10 -m pip install deepspeed==0.14.2
+
+%environment
+    export PATH=/usr/local/cuda/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+    export CUDA_HOME=/usr/local/cuda
+    export PYTHONUNBUFFERED=1
+    # Optional: Hugging Face cache on local scratch
+    export HF_HOME=/scratch/$USER/hf
+    export TRANSFORMERS_CACHE=/scratch/$USER/hf
+
+%test
+    python3.10 --version
+    python3.10 -c "import torch; print('torch', torch.__version__, 'cuda', torch.version.cuda)"
+    python3.10 -c "import transformers; print('transformers OK')"
+    python3.10 -c "import accelerate; print('accelerate OK')"
+    python3.10 -c "import bitsandbytes as bnb; print('bnb', bnb.__version__)"
+    python3.10 -c "import vllm; print('vllm OK')"
+    python3.10 -c "import flash_attn; print('flash_attn OK')"
+    python3.10 -c "import deepspeed; print('deepspeed OK')"
